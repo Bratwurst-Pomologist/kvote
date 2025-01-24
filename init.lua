@@ -166,9 +166,9 @@ minetest.register_chatcommand("vn",{
       return
     end
     votes.no = votes.no + 1
-    voters[name] = param
+    voters[name] = true
     minetest.chat_send_player(name, "You voted no.")
-    local target_name = tagret[next(target)]
+    local target_name = target[next(target)]
     for _, player in ipairs(minetest.get_connected_players()) do 
       update_hud(player, target_name)
     end
