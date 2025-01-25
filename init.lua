@@ -68,8 +68,8 @@ vote.new_vote = function(name, def, param)
     vote_in_progress = false
     local total_votes = votes.yes + votes.no
     minetest.chat_send_all("Vote is finished. Yes: " .. votes.yes .. " No: " .. votes.no .. " total: " .. total_votes)
-    local plyers = minetest.get_connected_players()
-    local amount_players = #plyers
+    local players = minetest.get_connected_players()
+    local amount_players = #players
     local seventy_five_players = math.floor(amount_players * 0.75)
     local percentage_yes = (votes.yes / amount_players) * 100
     if votes.yes > votes.no and votes.yes >= seventy_five_players then
