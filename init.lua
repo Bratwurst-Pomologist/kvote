@@ -5,7 +5,7 @@ local votes = {
   yes = 0,
   no = 0,
 }
-local vote_in_progress = false
+local kvote_in_progress = false
 local hud_ids = {}
 local vote_end_time = 0
 
@@ -20,7 +20,9 @@ end
 local function update_hud(player, target_name)
   local target_hud = target_name
   local remaining_time = math.max(0, math.floor(vote_end_time - os.time()))
-  local hud_text = string.format("Kick vote for %s \n2/3 majority of all players is necessary to pass.\nVote status: Yea: %d Nah: %d\ntime left: %d s", target_hud, votes.yes, votes.no, remaining_time)
+  local online_players = minetest.get_connected_players()
+  local amount_online_players = #online_players
+  local hud_text = string.format("Kick vote for %s \n2/3 majority of all players is necessary to pass.\nVote status: Yea: %d Nah: %d\ntime left: %d s online players: %d", target_hud, votes.yes, votes.no, remaining_time, amount_online_players)
   local hud_id = hud_ids[player:get_player_name()]
   
   if hud_id then
@@ -40,7 +42,7 @@ local function update_hud(player, target_name)
 end
 
 local function update_all_huds()
-  if not vote_in_progress then return end
+  if not kvote_in_progress then return end
   local target_name = target[next(target)]
   for _, player in ipairs(minetest.get_connected_players()) do
     update_hud(player, target_name)
@@ -49,11 +51,11 @@ local function update_all_huds()
 end
 
 vote.new_vote = function(name, def, param)
-  if vote_in_progress then
+  if kvote_in_progress then
     minetest.chat_send_player(name, "A vote is already running!")
     return
   end 
-  vote_in_progress = true
+  kvote_in_progress = true
   vote_end_time = os.time() + def.duration
   minetest.chat_send_all(name .. " " .. def.descrip .. def.target .. " /vy for yes, /vn for no.")
   minetest.chat_send_all("A 2/3 majority of all players is necessary to pass.")
@@ -65,13 +67,13 @@ vote.new_vote = function(name, def, param)
   end 
   update_all_huds()
   minetest.after(def.duration, function()
-    vote_in_progress = false
+    kvote_in_progress = false
     local total_votes = votes.yes + votes.no
     minetest.chat_send_all("Vote is finished. Yes: " .. votes.yes .. " No: " .. votes.no .. " total: " .. total_votes)
     local players = minetest.get_connected_players()
     local amount_players = #players
     local seventy_five_players = math.floor(amount_players * 0.75)
-    local percentage_yes = (votes.yes / amount_players) * 100
+    local percentage_yes = math.floor((votes.yes / amount_players) * 10000 + 0.5) / 100
     if votes.yes > votes.no and votes.yes >= seventy_five_players then
       minetest.chat_send_all("Vote has been passed successfully with " .. percentage_yes .. "%.")
       local player_to_kick = minetest.get_player_by_name(param)
@@ -128,7 +130,7 @@ minetest.register_chatcommand("kvote", {
 
 minetest.register_on_joinplayer(function(player)
   local target_name = target[next(target)]
-  if vote_in_progress then
+  if kvote_in_progress then
     update_hud(player, target_name)
   end
 end)
@@ -136,7 +138,7 @@ end)
 minetest.register_chatcommand("vy", {
   description = "Vote with yes while day vote.",
   func = function(name)
-    if not vote_in_progress then
+    if not kvote_in_progress then
       minetest.chat_send_player(name, "There is no vote running right now.")
       return
     end
@@ -157,7 +159,7 @@ minetest.register_chatcommand("vy", {
 minetest.register_chatcommand("vn",{
   description = "Vote with no while day vote.",
   func = function(name)
-    if not vote_in_progress then
+    if not kvote_in_progress then
       minetest.chat_send_player(name, "There is no vote running right now.")
       return
     end
