@@ -57,7 +57,7 @@ vote.new_vote = function(name, def, param)
   end 
   kvote_in_progress = true
   vote_end_time = os.time() + def.duration
-  minetest.chat_send_all(name .. " " .. def.descrip .. def.target .. " /vy for yes, /vn for no.")
+  minetest.chat_send_all(name .. " " .. def.descrip .. def.target .. " /ky for yes, /kn for no.")
   minetest.chat_send_all("A 2/3 majority of all players is necessary to pass.")
   reset_votes()
   target[name] = param
@@ -67,6 +67,7 @@ vote.new_vote = function(name, def, param)
   end 
   update_all_huds()
   minetest.after(def.duration, function()
+    if not kvote_in_progress then return end
     kvote_in_progress = false
     local total_votes = votes.yes + votes.no
     minetest.chat_send_all("Vote is finished. Yes: " .. votes.yes .. " No: " .. votes.no .. " total: " .. total_votes)
@@ -135,7 +136,7 @@ minetest.register_on_joinplayer(function(player)
   end
 end)
 
-minetest.register_chatcommand("vy", {
+minetest.register_chatcommand("ky", {
   description = "Vote with yes while day vote.",
   func = function(name)
     if not kvote_in_progress then
@@ -156,7 +157,7 @@ minetest.register_chatcommand("vy", {
   end,
 })
 
-minetest.register_chatcommand("vn",{
+minetest.register_chatcommand("kn",{
   description = "Vote with no while day vote.",
   func = function(name)
     if not kvote_in_progress then
@@ -176,4 +177,22 @@ minetest.register_chatcommand("vn",{
     end
     return
   end,
+})
+
+minetest.register_chatcommand("kabort",{
+  description = "Abort kick vote.",
+  privs = {kick = true},
+  func function()
+    if not kvote_in_progress then
+      return false, "There is no kick vote running."
+    end
+    for _, player in ipairs(minetest.get_connected_players()) do
+      local hud_id = hud_ids[player:get_player_name()]
+      if hud_id then
+        player:hud_remove(hud_id)
+        hud_ids[player:get_player_name()] = nil
+      end
+      kvote_in_progress = false
+      reset_votes()
+      return true, "Kick vote has been abotrted."
 })
