@@ -182,17 +182,51 @@ minetest.register_chatcommand("kn",{
 minetest.register_chatcommand("kabort",{
   description = "Abort kick vote.",
   privs = {kick = true},
-  func = function()
+  func = function(name)
     if not kvote_in_progress then
       return false, "There is no kick vote running."
     end
+    local players = minetest.get_connected_players()
     for _, player in ipairs(minetest.get_connected_players()) do
       local hud_id = hud_ids[player:get_player_name()]
       if hud_id then
         player:hud_remove(hud_id)
         hud_ids[player:get_player_name()] = nil
       end
+      end
       kvote_in_progress = false
       reset_votes()
-      return true, "Kick vote has been abotrted."
-end})
+      minetest.chat_send_all("Kick vote has been aborted by " .. name .. ".")
+end,})
+
+minetest.register_chatcommand("kforcing",{
+  description = "Forcing a positive kick result as presidential decree."
+  privs = {kick =true},
+  func = function(name)
+    if not kvote_in_progress then
+      return false, "There is no kick vote running."
+    end
+    
+    local target_name = target[next(target)]
+    local players = minetest.get_connected_players()
+    local player_to_kick = minetest.get_player_by_name(target_name)
+    
+    
+    
+    if player_to_kick then
+        minetest.kick_player(target_name, "You have been kicked by presidential decree.")
+        minetest.chat_send_all(name .. " has forced an positive vote result per presidential decree.")
+        minetest.chat_send_all(target_name .. " has been kicked.")
+        kvote_in_progress = false
+        reset_votes()
+      for _, player in ipairs(minetest.get_connected_players()) do
+      local hud_id = hud_ids[player:get_player_name()]
+      if hud_id then
+        player:hud_remove(hud_id)
+        hud_ids[player:get_player_name()] = nil
+      end
+    end
+        else
+          return false, target_name .. " could not be found."
+      end 
+end,})
