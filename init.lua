@@ -195,4 +195,4 @@ minetest.register_chatcommand("kabort",{
       kvote_in_progress = false
       reset_votes()
       return true, "Kick vote has been abotrted."
-})
+end})
