@@ -200,8 +200,8 @@ minetest.register_chatcommand("kabort",{
 end,})
 
 minetest.register_chatcommand("kforcing",{
-  description = "Forcing a positive kick result as presidential decree."
-  privs = {kick =true},
+  description = "Forcing a positive kick result as presidential decree.",
+  privs = {kick = true},
   func = function(name)
     if not kvote_in_progress then
       return false, "There is no kick vote running."
