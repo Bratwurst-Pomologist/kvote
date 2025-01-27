@@ -208,25 +208,22 @@ minetest.register_chatcommand("kforcing",{
     end
     
     local target_name = target[next(target)]
-    local players = minetest.get_connected_players()
     local player_to_kick = minetest.get_player_by_name(target_name)
     
-    
-    
     if player_to_kick then
-        minetest.kick_player(target_name, "You have been kicked by presidential decree.")
-        minetest.chat_send_all(name .. " has forced an positive vote result per presidential decree.")
-        minetest.chat_send_all(target_name .. " has been kicked.")
-        kvote_in_progress = false
-        reset_votes()
-      for _, player in ipairs(minetest.get_connected_players()) do
+     for _, player in ipairs(minetest.get_connected_players()) do
       local hud_id = hud_ids[player:get_player_name()]
       if hud_id then
         player:hud_remove(hud_id)
         hud_ids[player:get_player_name()] = nil
+        --minetest.kick_player(target_name, "You have been kicked by presidential decree.")
+        minetest.chat_send_all(name .. " has forced an positive vote result per presidential decree.")
+        minetest.chat_send_all(target_name .. " has been kicked.")
+        kvote_in_progress = false
+        reset_votes()
+        end
       end
-    end
-        else
-          return false, target_name .. " could not be found."
-      end 
+    else
+      return false, target_name .. " could not be found."
+    end 
 end,})
