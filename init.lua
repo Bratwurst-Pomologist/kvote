@@ -182,7 +182,7 @@ minetest.register_chatcommand("kn",{
 minetest.register_chatcommand("kabort",{
   description = "Abort kick vote.",
   privs = {kick = true},
-  func function()
+  func = function()
     if not kvote_in_progress then
       return false, "There is no kick vote running."
     end
